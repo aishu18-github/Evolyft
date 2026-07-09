@@ -1,6 +1,6 @@
 <h1 align="center">
   <br />
-  <img src="public/logo.png" alt="Evolyft" width="80" />
+  <img salt="Evolyft" width="80" />
   <br />
   Evolyft
   <br />
