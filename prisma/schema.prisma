@@ -1,0 +1,97 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String         @id @default(uuid())
+  name          String?
+  email         String         @unique
+  passwordHash  String
+  image         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  streak        StreakData?
+  roadmaps      Roadmap[]
+  sessions      StudySession[]
+  resources     Resource[]
+  activities    ActivityLog[]
+}
+
+model StreakData {
+  id             String    @id @default(uuid())
+  userId         String    @unique
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentStreak  Int       @default(0)
+  longestStreak  Int       @default(0)
+  lastActive     DateTime?
+  updatedAt      DateTime  @updatedAt
+}
+
+model Roadmap {
+  id           String      @id @default(uuid())
+  userId       String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title        String
+  description  String?
+  category     String      // e.g. "Frontend", "DSA", "AI/ML"
+  status       String      @default("IN_PROGRESS") // "NOT_STARTED", "IN_PROGRESS", "COMPLETED"
+  targetDate   DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  milestones   Milestone[]
+}
+
+model Milestone {
+  id          String    @id @default(uuid())
+  roadmapId   String
+  roadmap     Roadmap   @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  order       Int
+  isCompleted Boolean   @default(false)
+  dueDate     DateTime?
+  completedAt DateTime?
+}
+
+model StudySession {
+  id                 String   @id @default(uuid())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject            String
+  topic              String
+  duration           Int      // in minutes
+  notes              String?
+  productivityRating Int      // 1 to 5 stars
+  difficultyLevel    String   // "EASY", "MEDIUM", "HARD"
+  studyDate          DateTime @default(now())
+  createdAt          DateTime @default(now())
+}
+
+model Resource {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  url         String
+  description String?
+  category    String   // "ARTICLE", "VIDEO", "DOCUMENTATION", "NOTE", "OTHER"
+  tags        String[] // Array of tags
+  isFavorite  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String   // e.g. "ROADMAP_CREATED", "SESSION_LOGGED", "RESOURCE_FAVORITED"
+  details   String?
+  createdAt DateTime @default(now())
+}
